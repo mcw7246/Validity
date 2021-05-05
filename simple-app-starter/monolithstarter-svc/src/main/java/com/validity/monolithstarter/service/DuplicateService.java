@@ -10,48 +10,68 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class DuplicateService{
-    public static int calculate(String x, String y){
-        if(x.isEmpty()){
-            return y.length();
+    //"simple-app-starter/test-files/normal.csv"
+    public int calculate(String x, String y) {
+        int[][] dp = new int[x.length() + 1][y.length() + 1];
+    
+        for (int i = 0; i <= x.length(); i++) {
+          for (int j = 0; j <= y.length(); j++) {
+            if (i == 0) {
+              dp[i][j] = j;
+            }
+            else if (j == 0) {
+              dp[i][j] = i;
+            }
+            else {
+              dp[i][j] = min(dp[i - 1][j - 1]
+                              + costOfSubstitution(x.charAt(i - 1), y.charAt(j - 1)),
+                      dp[i - 1][j] + 1,
+                      dp[i][j - 1] + 1);
+            }
+          }
         }
-        if(y.isEmpty()){
-            return x.length();
-        }
-        int substitution = calculate(x.substring(1), y.substring(1)) + costOfSubstitution(x.charAt(0), y.charAt(0));
-
-        int insertion = calculate(x, y.substring(1)) + 1;
-        int deletion = calculate(x.substring(1), y) + 1;
-
-        return min(substitution, insertion, deletion);
-    }
-
-    public static int costOfSubstitution(char a, char b){
+    
+        return dp[x.length()][y.length()];
+      }
+    
+    public int costOfSubstitution(char a, char b){
         return a == b ? 0 : 1;
     }
-
-    public static int min(int... numbers){
+    
+    public int min(int... numbers){
         return Arrays.stream(numbers).min().orElse(Integer.MAX_VALUE);
     }
-
-    public static String getDuplicates(){
+    
+    public String getDuplicates(){
         List<String> data = new ArrayList<>();
+    
+        JSONObject json = new JSONObject();
         try{
-             
-            Scanner scanner = new Scanner(new File("simple-app-starter/test-files/normal.csv"));
-
-            while(scanner.hasNextLine()){
-                data.add(scanner.nextLine());
+          Scanner scanner = new Scanner(new File("simple-app-starter/test-files/normal.csv"));
+    
+          while(scanner.hasNextLine()){
+            String d = scanner.nextLine();
+    
+            d = d.replace(",", " ");
+            data.add(d);
+          }
+          for(int x = 0; x < data.size() - 1; x++){
+                for(int y = x+1; y < data.size() - 1; y++){
+                int difference = calculate(data.get(x).substring(2), data.get(y).substring(2));
+                    if(difference < 30){
+        
+                    System.out.println("LITTLE DIFFERENCE: " + difference+ " \n\t" + data.get(x).substring(2) + "\n\t" + data.get(y).substring(2));
+                    json.put("Input 1", data.get(x).substring(2));
+                    json.put("Input 2", data.get(y).substring(2));
+                    }
+                }
+    
             }
-            System.out.println(data);
-
-            for(int x = 0; x < data.size() - 1; x++){
-                
-                System.out.println(calculate(data.get(x), data.get(x+1)));
-            }
-            
+    
         }catch(Exception e){
-          e.getStackTrace();
+            e.getStackTrace();
         }
-        return data.toString();
+        System.out.println(json.toString());
+        return json.toString();
     }
 }
