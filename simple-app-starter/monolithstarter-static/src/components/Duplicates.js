@@ -4,7 +4,7 @@ class DuplicateInputs extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      duplicates : {}
+      duplicates : "There are no duplicates"
     };
   }
 
